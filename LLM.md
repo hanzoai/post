@@ -34,3 +34,4 @@ and the native Go `/v1/social` contract (`hanzo.ai/zip/social` on `api.hanzo.ai`
    `@hanzo/gui` and `@hanzogui/*` so React theme contexts never split.
 5. **No Foreign Tooling**: Never reintroduce `vite`, `@vitejs/plugin-react`,
    `@hanzo/vite`, or `@playwright/test`. Use `hanzo serve` and native CDP (`e2e/social.e2e.mjs`).
+- 2026-11-16: cloud coding smoke test (Dev).
