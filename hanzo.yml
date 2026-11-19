@@ -16,11 +16,13 @@ test:
 
   # Verbatim the build line the image runs, run before there is an image, so a
   # break arrives in a minute instead of after a full layer stack. `pnpm build`
-  # is `tsc --noEmit` then `vite build`. A vite build that emits nothing still
-  # exits 0, hence the file tests.
+  # is `tsc --noEmit && hanzo serve build`, so install the hanzo CLI when the
+  # bare runner does not carry it, matching Dockerfile.
   - name: build
     run: |
       set -e
+      export PATH="$HOME/.local/bin:$PATH"
+      command -v hanzo >/dev/null 2>&1 || (curl -fsSL https://get.hanzo.ai | sh)
       pnpm build
       test -s dist/index.html
       test -d dist/assets
@@ -58,6 +60,8 @@ site:
   on: [main]
   build: |
     set -e
+    export PATH="$HOME/.local/bin:$PATH"
+    command -v hanzo >/dev/null 2>&1 || (curl -fsSL https://get.hanzo.ai | sh)
     corepack enable
     pnpm install --frozen-lockfile
     pnpm build
