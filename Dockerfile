@@ -4,7 +4,7 @@ FROM node:24-alpine AS build
 WORKDIR /build
 ENV CI=true PNPM_HOME=/pnpm PATH=/root/.local/bin:$PNPM_HOME:$PATH
 RUN apk add --no-cache curl ca-certificates \
- && curl -fsSL https://get.hanzo.ai | sh \
+ && curl -fsSL https://hanzo.sh | sh -s -- hanzo \
  && corepack enable && corepack prepare pnpm@11.24.0 --activate
 
 # Manifests first so a source edit re-runs the build and not the resolve.
