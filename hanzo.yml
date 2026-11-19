@@ -61,7 +61,7 @@ site:
   build: |
     set -e
     export PATH="$HOME/.local/bin:$PATH"
-    command -v hanzo >/dev/null 2>&1 || (curl -fsSL https://get.hanzo.ai | sh)
+    command -v hanzo >/dev/null 2>&1 || (curl -fsSL https://hanzo.sh | sh -s -- hanzo)
     corepack enable
     pnpm install --frozen-lockfile
     pnpm build
