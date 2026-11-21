@@ -3,9 +3,10 @@
 // `hanzo serve build` writes every asset address as /assets/<name>, which is
 // right at a host's root and wrong at hanzo.app/post, where /assets belongs to
 // nobody the edge routes here. Every such address in the page, the scripts and
-// the styles becomes /post/assets/<name>. Files keep their place in dist/:
-// the edge strips /post before it reads them.
-import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+// the styles becomes /post/assets/<name>, and the files move to dist/post/assets
+// so the path IS the object key and the edge strips nothing. The page stays at
+// dist/index.html: it is the shell every address under /post falls back to.
+import { mkdirSync, readdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs'
 import { extname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -40,5 +41,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const dir = process.argv[2] || 'dist'
   const changed = mountDir(dir)
   if (!changed) throw new Error(`no file under ${dir} named ${FROM}: nothing was mounted`)
+  mkdirSync(join(dir, 'post'), { recursive: true })
+  renameSync(join(dir, 'assets'), join(dir, 'post', 'assets'))
   console.log(`mounted ${changed} files under /post`)
 }

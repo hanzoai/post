@@ -27,7 +27,7 @@ COPY scripts scripts
 # of the image.
 RUN pnpm build \
  && [ -s dist/index.html ] \
- && [ -d dist/assets ] \
+ && [ -d dist/post/assets ] \
  && grep -q /post/assets/ dist/index.html
 
 # One process serves the SPA, the Postiz paths (/mcp, /api/mcp, /public/v1),

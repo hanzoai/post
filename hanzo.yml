@@ -25,7 +25,7 @@ test:
       command -v hanzo >/dev/null 2>&1 || (curl -fsSL https://hanzo.sh | sh -s -- hanzo)
       pnpm build
       test -s dist/index.html
-      test -d dist/assets
+      test -d dist/post/assets
       grep -q '/post/assets/' dist/index.html
 
 images:
@@ -67,5 +67,5 @@ site:
     pnpm install --frozen-lockfile
     pnpm build
     test -s dist/index.html
-    test -d dist/assets
+    test -d dist/post/assets
     grep -q '/post/assets/' dist/index.html
