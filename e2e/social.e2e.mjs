@@ -588,7 +588,7 @@ class CdpBrowser {
       evaluate,
       waitFor,
       async goto(path) {
-        await this.gotoUrl(`${appOrigin}${path}`)
+        await this.gotoUrl(`${appOrigin}/post${path === '/' ? '/' : path}`)
       },
       gotoUrl: async (url) => {
         await this.send('Page.navigate', { url }, sessionId)
@@ -702,7 +702,7 @@ test.after(async () => {
 test('server/http.mjs serves SPA routes, proxies /v1/social, and answers native MCP over fetch', async () => {
   resetTraffic()
 
-  const htmlRes = await fetch(`${appOrigin}/compose`)
+  const htmlRes = await fetch(`${appOrigin}/post/compose`)
   assert.equal(htmlRes.status, 200)
   assert.match(htmlRes.headers.get('content-type') || '', /text\/html/)
   const html = await htmlRes.text()
@@ -730,7 +730,7 @@ test('signed-out browser renders the single gate on every route and makes zero /
   try {
     for (const screen of SCREENS) {
       await page.goto(screen.path)
-      await page.waitFor('window.__e2e.hasHeading("Hanzo Social")', `gate heading on ${screen.path}`)
+      await page.waitFor('window.__e2e.hasHeading("Hanzo Post")', `gate heading on ${screen.path}`)
       const paneText = await page.evaluate('window.__e2e.paneText()')
       assert.match(paneText, /Connect a network, write a post, and schedule it\./)
       assert.ok(!paneText.includes('Could not load'), `unexpected error banner on ${screen.path}`)

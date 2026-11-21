@@ -1,22 +1,22 @@
 {
-  "name": "@hanzo/social",
+  "name": "@hanzo/post",
   "version": "0.1.3",
   "private": true,
   "type": "module",
   "license": "Apache-2.0 OR MIT",
-  "description": "Hanzo Social — write once, publish to every account you own, now or on a schedule.",
+  "description": "Hanzo Post — connect your social channels, then schedule and auto-publish. Served at hanzo.app/post.",
   "packageManager": "pnpm@11.24.0",
   "engines": {
     "node": ">=22.18"
   },
   "scripts": {
     "dev": "hanzo serve --port 3300",
-    "build": "tsc --noEmit && hanzo serve build",
+    "build": "tsc --noEmit && hanzo serve build && node scripts/base.mjs dist",
     "typecheck": "tsc --noEmit",
     "preview": "hanzo serve preview --port 3300",
     "e2e": "node --test e2e/social.e2e.mjs",
     "start": "node server/http.mjs",
-    "test": "node --test server/postiz.test.mjs server/http.test.mjs server/edge.test.mjs server/catalog.test.mjs server/audience.test.mjs server/credentials.test.mjs server/agent.test.mjs server/connect.test.mjs server/network.test.mjs"
+    "test": "node --test scripts/base.test.mjs server/postiz.test.mjs server/http.test.mjs server/edge.test.mjs server/catalog.test.mjs server/audience.test.mjs server/credentials.test.mjs server/agent.test.mjs server/connect.test.mjs server/network.test.mjs"
   },
   "dependencies": {
     "@hanzo/ai": "catalog:",

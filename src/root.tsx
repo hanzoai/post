@@ -10,13 +10,14 @@ import { IamProvider, useIam } from '@hanzo/iam/react'
 import { useEffect } from 'react'
 import { Outlet } from 'react-router'
 
+import { BASE } from '~/base'
 import { Client } from '~/client'
 import { own, subject } from '~/token'
 
 /**
  * WHERE THIS BROWSER SIGNS IN, derived once and read by everyone who needs it.
  *
- * The client is `hanzo-social`, this application's name under the estate's
+ * The client is `hanzo-post`, this application's name under the estate's
  * `<org>-<app>` scheme, so the org is the name's first word rather than a
  * second table to forget to update. A code is bound to the client that asked
  * for it, so two derivations would be two clients and the exchange would be
@@ -28,11 +29,11 @@ export function origin(): {
   redirectUri: string
   organization: string
 } {
-  const clientId = import.meta.env.VITE_HANZO_CLIENT_ID || 'hanzo-social'
+  const clientId = import.meta.env.VITE_HANZO_CLIENT_ID || 'hanzo-post'
   return {
     serverUrl: (import.meta.env.VITE_HANZO_IAM || 'https://hanzo.id').replace(/\/+$/, ''),
     clientId,
-    redirectUri: `${window.location.origin}/auth/callback`,
+    redirectUri: `${window.location.origin}${BASE}/auth/callback`,
     organization: clientId.split('-')[0]!,
   }
 }
@@ -53,7 +54,7 @@ export function Root() {
   // theirs.
   own(subject())
   return (
-    <IamProvider config={{ ...origin(), postLogoutRedirectUri: `${window.location.origin}/` }}>
+    <IamProvider config={{ ...origin(), postLogoutRedirectUri: `${window.location.origin}${BASE}/` }}>
       <Identity />
       <Client>
         <Outlet />

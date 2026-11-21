@@ -1,4 +1,4 @@
-# Hanzo CI/CD — social. All real config is here; .hanzo/workflows/cicd.yml is
+# Hanzo CI/CD — post. All real config is here; .hanzo/workflows/cicd.yml is
 # triggers and an import of hanzoai/ci.
 
 test:
@@ -12,7 +12,7 @@ test:
       pnpm install --frozen-lockfile
 
   - name: postiz
-    run: node --test server/postiz.test.mjs server/http.test.mjs server/edge.test.mjs server/catalog.test.mjs server/audience.test.mjs server/credentials.test.mjs server/agent.test.mjs
+    run: node --test scripts/base.test.mjs server/postiz.test.mjs server/http.test.mjs server/edge.test.mjs server/catalog.test.mjs server/audience.test.mjs server/credentials.test.mjs server/agent.test.mjs
 
   # Verbatim the build line the image runs, run before there is an image, so a
   # break arrives in a minute instead of after a full layer stack. `pnpm build`
@@ -26,28 +26,29 @@ test:
       pnpm build
       test -s dist/index.html
       test -d dist/assets
+      grep -q '/post/assets/' dist/index.html
 
 images:
-  - name: social
+  - name: post
     context: .
     dockerfile: Dockerfile
-    repo: ghcr.io/hanzoai/social
+    repo: ghcr.io/hanzoai/post
     # No build_secrets, and none belong here. Every credential that names a
     # person is minted by hanzo.id at sign-in; every credential that names a
     # network is sealed in KMS and read only by the publisher, server-side.
 
 # Two doors. The native API is /v1/social on api.hanzo.ai (MCP tool `social`,
-# CLI `hanzo social`). social.hanzo.ai is the Postiz drop-in for a client that
+# CLI `hanzo social`). The app is hanzo.app/post. social.hanzo.ai is the Postiz drop-in for a client that
 # already speaks Postiz: /mcp, /api/mcp, /public/v1, /api/public/v1. The worker
 # hanzo-social-postiz serves those paths and POST /v1/social/mcp, the native
 # agent tool. The image above serves both when it owns the process: Postiz
 # paths locally, and /v1 proxied to HANZO_API
 # (default https://api.hanzo.ai). The frontend calls api.hanzo.ai.
 #
-# The site lane still publishes dist and, on every main publish, re-binds
-# social.hanzo.ai. The worker route stays in front of that proxied record, so
-# the Postiz paths keep answering JSON. Leave the site lane: it is what
-# updates the app.
+# The site lane publishes dist under the slug `post`. hanzo.app/post serves
+# that prefix (universe infra/sites/sites.yaml, route post-hanzo-app), so a main
+# publish is a deploy. social.hanzo.ai only redirects there; the Postiz worker
+# route stays in front of it and keeps answering JSON.
 #
 # `build` runs ON THE PUBLISH JOB. The test gate also produces dist, but that
 # is a different runner: the site step looks at THIS checkout, and without a
@@ -55,7 +56,7 @@ images:
 # commands as the image, so the bytes the edge serves are the bytes the gate
 # already compiled.
 site:
-  slug: social
+  slug: post
   dir: dist
   on: [main]
   build: |
@@ -67,23 +68,4 @@ site:
     pnpm build
     test -s dist/index.html
     test -d dist/assets
-    # Attach social.hanzo.ai to this project. The deploy token is already in
-    # this step; a SuperAdmin-vouched bind goes live immediately. Anything
-    # else is printed (status, DNS records, or the refusal) and does not
-    # fail the export — the upload still has to land.
-    api="${HANZO_API:-https://api.hanzo.ai}"
-    if [ -z "${HANZO_DEPLOY_TOKEN:-}" ]; then
-      echo "::warning::HANZO_DEPLOY_TOKEN missing in site.build — cannot POST /v1/projects/social/domains"
-    else
-      out="${RUNNER_TEMP:-/tmp}/bind-ai.json"
-      set +e
-      code=$(curl -sS -o "$out" -w '%{http_code}' \
-        -X POST "$api/v1/projects/social/domains" \
-        -H "Authorization: Bearer $HANZO_DEPLOY_TOKEN" \
-        -H 'Content-Type: application/json' \
-        -d '{"domains":["social.hanzo.ai"]}')
-      curl_rc=$?
-      set -e
-      echo "POST /v1/projects/social/domains social.hanzo.ai HTTP ${code:-000} curl=${curl_rc}"
-      cat "$out" || true
-    fi
+    grep -q '/post/assets/' dist/index.html

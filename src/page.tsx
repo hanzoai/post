@@ -136,7 +136,7 @@ export function Ready({ children }: { children: ReactNode }) {
     return (
       <YStack flex={1} items="center" justify="center" gap="$3" p="$6">
         <Text render="h1" fontSize="$6" fontWeight="600" color="$ink">
-          Hanzo Social
+          Hanzo Post
         </Text>
         <Text fontSize="$2" color="$soft" text="center" maxW={460}>
           Connect a network, write a post, and schedule it. Those three are the

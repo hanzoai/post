@@ -51,8 +51,15 @@ export function isApiPath(url) {
   return path === '/v1' || path.startsWith('/v1/')
 }
 
+/** The app is mounted at /post; the edge strips it, and this process does the same. */
+export function unmount(url) {
+  const path = (url || '/').split('?')[0]
+  if (path !== '/post' && !path.startsWith('/post/')) return url || '/'
+  return (url || '/').slice('/post'.length) || '/'
+}
+
 function fileFor(root, url) {
-  const pathname = decodeURIComponent((url || '/').split('?')[0])
+  const pathname = decodeURIComponent(unmount(url).split('?')[0])
   const relative = normalize(pathname).replace(/^(\.\.[/\\])+/, '')
   const path = join(root, relative)
   if (!path.startsWith(root)) return null
@@ -170,6 +177,6 @@ function startedDirectly() {
 if (startedDirectly()) {
   const port = Number(process.env.PORT || 3000)
   createServer(createHandler()).listen(port, '0.0.0.0', () => {
-    console.log(`Hanzo Social listening on :${port}`)
+    console.log(`Hanzo Post listening on :${port}`)
   })
 }

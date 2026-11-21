@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-# Hanzo Social — the SPA, the Postiz door, and a /v1 proxy to api.hanzo.ai.
+# Hanzo Post — the SPA, the Postiz door, and a /v1 proxy to api.hanzo.ai.
 FROM node:24-alpine AS build
 WORKDIR /build
 ENV CI=true PNPM_HOME=/pnpm PATH=/root/.local/bin:$PNPM_HOME:$PATH
@@ -21,12 +21,14 @@ RUN pnpm install --frozen-lockfile
 
 COPY tsconfig.json index.html ./
 COPY src src
+COPY scripts scripts
 
 # `pnpm build` runs `tsc --noEmit && hanzo serve build`, so the typecheck is part
 # of the image.
 RUN pnpm build \
  && [ -s dist/index.html ] \
- && [ -d dist/assets ]
+ && [ -d dist/assets ] \
+ && grep -q /post/assets/ dist/index.html
 
 # One process serves the SPA, the Postiz paths (/mcp, /api/mcp, /public/v1),
 # and proxies /v1 — including /v1/social — to HANZO_API. PORT defaults to 3000.

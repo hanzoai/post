@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router'
 
 import { Accounts } from '~/Accounts'
+import { BASE } from '~/base'
 import { Credentials } from '~/CredentialsView'
 import { Analytics } from '~/Analytics'
 import { Calendar } from '~/Calendar'
@@ -47,4 +48,4 @@ export const router = createBrowserRouter([
       },
     ],
   },
-])
+], { basename: BASE })

@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import test from 'node:test'
 
 import { isAgentPath } from './agent.mjs'
-import { createHandler, isApiPath } from './http.mjs'
+import { createHandler, isApiPath, unmount } from './http.mjs'
 import { isPostizPath } from './postiz.mjs'
 
 function listen(server) {
@@ -129,4 +129,12 @@ test('a dead Hanzo API is a 502 on /v1 and leaves Postiz alone', async () => {
   } finally {
     app.close()
   }
+})
+
+test('the app is served from /post and nowhere else', () => {
+  assert.equal(unmount('/post'), '/')
+  assert.equal(unmount('/post/'), '/')
+  assert.equal(unmount('/post/assets/main-1.js?v=1'), '/assets/main-1.js?v=1')
+  assert.equal(unmount('/posts'), '/posts')
+  assert.equal(unmount('/v1/social/posts'), '/v1/social/posts')
 })

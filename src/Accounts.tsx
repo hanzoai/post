@@ -19,6 +19,7 @@ import { useState } from 'react'
 import { Text, XStack, YStack } from '@hanzo/ui'
 import { Link } from 'react-router'
 
+import { BASE } from '~/base'
 import { audiencesFor, isAudience, whereLine, type Audience } from '~/audience'
 import { cardCopy, catalogState, takesApp } from '~/catalog'
 import { connectLabel, formOf, returnSays, standing as stand, way, type Return } from '~/connect'
@@ -257,7 +258,7 @@ function One({
     const win = openConsent()
     try {
       const { authorizeUrl } = await connect(http, network.provider, {
-        back: `${window.location.origin}/accounts`,
+        back: `${window.location.origin}${BASE}/accounts`,
       })
       if (!authorizeUrl) {
         win?.close()

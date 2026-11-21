@@ -157,7 +157,7 @@ export function Frame() {
       <Sidebar className="rail">
         <XStack className="brand" items="center" px="$2" py="$1.5" shrink={0}>
           <Text fontSize="$3" fontWeight="600" color="$ink" numberOfLines={1}>
-            Hanzo Social
+            Hanzo Post
           </Text>
         </XStack>
 

@@ -1,4 +1,6 @@
-# Hanzo Social
+# Hanzo Post
+
+Live at https://hanzo.app/post, mounted under `/post` (`src/base.ts`, `scripts/base.mjs`); `social.hanzo.ai` redirects there.
 
 Write once. Publish to every account your organization owns — now, or at a time
 you pick.

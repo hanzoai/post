@@ -1,6 +1,6 @@
-# Hanzo Social (`@hanzo/social`) — Agent Guide
+# Hanzo Post (`@hanzo/post`) — Agent Guide
 
-Sovereign multi-network social publishing web application (`social.hanzo.ai`) and
+Sovereign multi-network social publishing web application (`hanzo.app/post`; `social.hanzo.ai` redirects there and keeps the Postiz door) and
 Postiz-compatible MCP/API adapter backed by Hanzo IAM (`hanzo.id`), Hanzo KMS,
 and the native Go `/v1/social` contract (`hanzo.ai/zip/social` on `api.hanzo.ai`).
 
