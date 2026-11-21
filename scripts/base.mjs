@@ -5,8 +5,9 @@
 // nobody the edge routes here. Every such address in the page, the scripts and
 // the styles becomes /post/assets/<name>, and the files move to dist/post/assets
 // so the path IS the object key and the edge strips nothing. The page stays at
-// dist/index.html: it is the shell every address under /post falls back to.
-import { mkdirSync, readdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs'
+// dist/index.html, and again at dist/post/index.html for the address /post/
+itself: it is the shell every address under /post falls back to.
+import { copyFileSync, mkdirSync, readdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs'
 import { extname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -43,5 +44,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   if (!changed) throw new Error(`no file under ${dir} named ${FROM}: nothing was mounted`)
   mkdirSync(join(dir, 'post'), { recursive: true })
   renameSync(join(dir, 'assets'), join(dir, 'post', 'assets'))
+  // /post/ names a directory, and a directory answers with its own index.
+  copyFileSync(join(dir, 'index.html'), join(dir, 'post', 'index.html'))
   console.log(`mounted ${changed} files under /post`)
 }
