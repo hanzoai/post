@@ -6,7 +6,7 @@
 // the styles becomes /post/assets/<name>, and the files move to dist/post/assets
 // so the path IS the object key and the edge strips nothing. The page stays at
 // dist/index.html, and again at dist/post/index.html for the address /post/
-itself: it is the shell every address under /post falls back to.
+// itself: it is the shell every address under /post falls back to.
 import { copyFileSync, mkdirSync, readdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs'
 import { extname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
