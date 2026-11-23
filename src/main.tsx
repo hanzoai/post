@@ -16,6 +16,9 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
 import { App } from '~/app'
+import { installPostErrorReporter } from '~/error-reporter'
+
+installPostErrorReporter()
 
 /**
  * THE AMBIENT TELEMETRY CLIENT, OFF.
