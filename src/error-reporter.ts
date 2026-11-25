@@ -39,6 +39,20 @@ function anonId(): string {
   }
 }
 
+const DEFAULT_RELEASE = '0.1.3'
+
+function releaseOf(): string {
+  try {
+    const v = typeof document !== 'undefined'
+      ? document.querySelector?.('meta[name="hanzo-release"]')?.getAttribute?.('content')?.trim()
+      : ''
+    if (v) return v
+  } catch {
+    /* ignore DOM access errors */
+  }
+  return DEFAULT_RELEASE
+}
+
 export function resetPostErrorReporterForTest(): void {
   seen.clear()
   sentCount = 0
@@ -69,6 +83,7 @@ export async function reportPostError(input: {
     const path = scrub(window.location?.pathname || '/')
     const host = window.location?.hostname || 'post.hanzo.ai'
     const origin = window.location?.origin && window.location.origin !== 'null' ? window.location.origin : `https://${host}`
+    const release = releaseOf()
 
     const payload = JSON.stringify({
       batch: [
@@ -79,14 +94,14 @@ export async function reportPostError(input: {
           distinctId: sub ?? anonId(),
           ...(sub ? { personId: sub } : {}),
           product: 'post',
-          release: '0.1.3',
+          release,
           environment: 'production',
           site: host,
           url: `${origin}${path}`,
           path,
           level: 'error',
           library: '@hanzo/post',
-          libraryVersion: '0.1.3',
+          libraryVersion: release,
           error: {
             type: errType,
             message: cleanMsg,
@@ -95,6 +110,7 @@ export async function reportPostError(input: {
           },
           properties: {
             source: 'post',
+            release,
             signed_in: Boolean(bearer()),
           },
         },

@@ -20,6 +20,17 @@ export function mount(text) {
   return text.split(TO).join(FROM).split(FROM).join(TO)
 }
 
+/** Stamp the build release onto index.html so browser error events match uploaded sourcemaps. */
+export function stampRelease(html, release) {
+  const clean = String(release || '').trim()
+  if (!clean || !/^[A-Za-z0-9._-]+$/.test(clean)) return html
+  const tag = `<meta name="hanzo-release" content="${clean}">`
+  if (/<meta\s+name="hanzo-release"[^>]*>/i.test(html)) {
+    return html.replace(/<meta\s+name="hanzo-release"[^>]*>/i, tag)
+  }
+  return html.includes('</head>') ? html.replace('</head>', `  ${tag}\n</head>`) : html
+}
+
 export function mountDir(dir) {
   let changed = 0
   for (const name of readdirSync(dir)) {
@@ -42,6 +53,11 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const dir = process.argv[2] || 'dist'
   const changed = mountDir(dir)
   if (!changed) throw new Error(`no file under ${dir} named ${FROM}: nothing was mounted`)
+  const release = process.env.HANZO_RELEASE || process.env.VITE_HANZO_RELEASE || process.env.GITHUB_SHA || ''
+  if (release) {
+    const indexPath = join(dir, 'index.html')
+    writeFileSync(indexPath, stampRelease(readFileSync(indexPath, 'utf8'), release))
+  }
   mkdirSync(join(dir, 'post'), { recursive: true })
   renameSync(join(dir, 'assets'), join(dir, 'post', 'assets'))
   // /post/ names a directory, and a directory answers with its own index.

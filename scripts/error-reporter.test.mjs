@@ -46,6 +46,8 @@ test('reportPostError sends scrubbed error events with publishable key when sign
     const ev = JSON.parse(calls[0].body).batch[0]
     assert.equal(ev.type, 'error')
     assert.equal(ev.product, 'post')
+    assert.equal(ev.release, '0.1.3')
+    assert.equal(ev.properties.release, '0.1.3')
     assert.equal(ev.site, 'post.hanzo.ai')
     assert.equal(ev.path, '/compose')
     assert.ok(!ev.error.message.includes('alice@hanzo.ai'))
@@ -54,6 +56,41 @@ test('reportPostError sends scrubbed error events with publishable key when sign
     globalThis.fetch = origFetch
     if (origWindow === undefined) delete globalThis.window
     else globalThis.window = origWindow
+  }
+})
+
+test('reportPostError prefers hanzo-release meta tag when stamped by build', async () => {
+  resetPostErrorReporterForTest()
+  const origFetch = globalThis.fetch
+  const origWindow = globalThis.window
+  const origDocument = globalThis.document
+  globalThis.window = {
+    location: { hostname: 'hanzo.app', origin: 'https://hanzo.app', pathname: '/post/compose' },
+    addEventListener: () => {},
+  }
+  globalThis.document = {
+    querySelector: (sel) =>
+      sel === 'meta[name="hanzo-release"]'
+        ? { getAttribute: (name) => (name === 'content' ? 'abcdef1234567890abcdef1234567890abcdef12' : null) }
+        : null,
+  }
+  const calls = []
+  globalThis.fetch = async (input, init) => {
+    calls.push({ url: String(input), body: String(init?.body ?? '') })
+    return new Response('{}', { status: 200 })
+  }
+  try {
+    await reportPostError({ type: 'Error', message: 'boom' })
+    assert.equal(calls.length, 1)
+    const ev = JSON.parse(calls[0].body).batch[0]
+    assert.equal(ev.release, 'abcdef1234567890abcdef1234567890abcdef12')
+    assert.equal(ev.properties.release, 'abcdef1234567890abcdef1234567890abcdef12')
+  } finally {
+    globalThis.fetch = origFetch
+    if (origWindow === undefined) delete globalThis.window
+    else globalThis.window = origWindow
+    if (origDocument === undefined) delete globalThis.document
+    else globalThis.document = origDocument
   }
 })
 
