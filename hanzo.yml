@@ -59,6 +59,7 @@ site:
   slug: post
   dir: dist
   on: [main]
+  sourcemaps: true
   build: |
     set -e
     export PATH="$HOME/.local/bin:$PATH"
