@@ -16,7 +16,7 @@
     "preview": "hanzo serve preview --port 3300",
     "e2e": "node --test e2e/social.e2e.mjs",
     "start": "node server/http.mjs",
-    "test": "node --test scripts/base.test.mjs scripts/error-reporter.test.mjs server/postiz.test.mjs server/http.test.mjs server/edge.test.mjs server/catalog.test.mjs server/audience.test.mjs server/credentials.test.mjs server/agent.test.mjs server/connect.test.mjs server/network.test.mjs"
+    "test": "node --test scripts/base.test.mjs scripts/error-reporter.test.mjs server/postiz.test.mjs server/http.test.mjs server/edge.test.mjs server/catalog.test.mjs server/audience.test.mjs server/credentials.test.mjs server/agent.test.mjs server/connect.test.mjs server/network.test.mjs server/scheduler.test.mjs"
   },
   "dependencies": {
     "@hanzo/ai": "catalog:",
