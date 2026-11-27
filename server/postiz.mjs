@@ -17,7 +17,7 @@ import { apiKeyFrom, HanzoError, hanzoClient } from './hanzo.mjs'
 const WORKSPACE = { id: 'workspace', name: 'Workspace' }
 
 /** What each network accepts. Same caps the composer checks before a post is stored. */
-const RULES = {
+export const RULES = {
   x: { name: 'X', text: 280, needs: 'text, or text with up to 4 images and 1 video', images: 4, videos: 1, mix: true },
   facebook: { name: 'Facebook', text: 63206, needs: 'text, images, or one video', images: 10, videos: 1, mix: true },
   instagram: { name: 'Instagram', text: 2200, needs: 'at least one image or video', images: 10, videos: 10, mix: true },
@@ -556,6 +556,54 @@ async function schemaFor(hanzo, platform) {
   }
 }
 
+const VIDEO_EXT = /\.(mp4|mov|m4v|webm|mkv|avi|mpe?g|3gp)(\?|#|$)/i
+const IMAGE_EXT = /\.(jpe?g|png|gif|webp|avif|heic|heif|bmp|tiff?)(\?|#|$)/i
+
+export function mediaKind(url) {
+  const path = (url || '').split(/[?#]/)[0]
+  if (VIDEO_EXT.test(path)) return 'video'
+  if (IMAGE_EXT.test(path)) return 'image'
+  return 'unknown'
+}
+
+export function checkMedia(rule, media) {
+  if (!rule) return null
+  if (!Array.isArray(media) || media.length === 0) {
+    if (rule.needs?.includes('at least one image or video') || rule.needs === 'media') {
+      return `${rule.name} needs a photo or a video.`
+    }
+    if (rule.needs === 'one video' || rule.needs === 'video') {
+      return `${rule.name} needs a video — the video is the post.`
+    }
+    return null
+  }
+  if (media.length > 10) {
+    return '10 media items at most.'
+  }
+  const videos = media.filter((m) => mediaKind(m) === 'video')
+  const images = media.filter((m) => mediaKind(m) === 'image')
+
+  if (rule.videos === 0 && videos.length > 0) {
+    return `${rule.name} does not take video.`
+  }
+  if (rule.images === 0 && images.length > 0) {
+    return `${rule.name} does not take photos.`
+  }
+  if (images.length > rule.images) {
+    return `${rule.name} takes ${rule.images} photo${rule.images === 1 ? '' : 's'}, not ${images.length}.`
+  }
+  if (videos.length > rule.videos) {
+    return `${rule.name} takes ${rule.videos} video${rule.videos === 1 ? '' : 's'}, not ${videos.length}.`
+  }
+  if (!rule.mix && videos.length > 0 && images.length > 0) {
+    return `On ${rule.name} a video is the whole post — it cannot carry photos as well.`
+  }
+  if ((rule.needs === 'one video' || rule.needs === 'video') && videos.length === 0) {
+    return `${rule.name} needs a video — the video is the post.`
+  }
+  return null
+}
+
 async function schedule(hanzo, args, origin) {
   const items = Array.isArray(args.socialPost) ? args.socialPost : null
   if (!items?.length) return { output: { errors: 'socialPost must list at least one post' } }
@@ -582,11 +630,25 @@ async function schedule(hanzo, args, origin) {
     if (rule && content.length > rule.text) {
       return { output: { errors: `${rule.name} allows ${rule.text} characters and this post has ${content.length}.` } }
     }
+    if (rule) {
+      const mediaErr = checkMedia(rule, media)
+      if (mediaErr) {
+        return { output: { errors: mediaErr } }
+      }
+    }
     const type = item.type === 'now' || item.type === 'schedule' || item.type === 'draft' ? item.type : 'draft'
     let scheduleAt = 0
     if (type === 'schedule') {
       const when = Date.parse(item.date)
       if (Number.isNaN(when)) return { output: { errors: 'A scheduled post needs date as a UTC timestamp.' } }
+      const now = Date.now()
+      if (when < now) {
+        return { output: { errors: 'A scheduled post cannot be scheduled in the past.' } }
+      }
+      const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000
+      if (when > now + ONE_YEAR_MS) {
+        return { output: { errors: 'A scheduled post cannot be scheduled more than 1 year in advance.' } }
+      }
       scheduleAt = Math.floor(when / 1000)
     }
     try {
