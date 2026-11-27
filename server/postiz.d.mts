@@ -1,6 +1,16 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
 export const TOOLS: Array<{ name: string; description: string; inputSchema: unknown }>
+export const RULES: Record<string, {
+  name: string
+  text: number
+  needs: string
+  images: number
+  videos: number
+  mix: boolean
+}>
+export function mediaKind(url: string): 'image' | 'video' | 'unknown'
+export function checkMedia(rule: unknown, media: string[]): string | null
 export function callPostizTool(
   name: string,
   args: Record<string, unknown>,
