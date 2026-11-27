@@ -26,24 +26,31 @@ export function at(seconds: number): string {
  * The distance from now, in the coarsest unit that still says something: "in 3
  * hours", "2 days ago". A scheduled post's usefulness is how soon, not when, and
  * a person reading a queue is comparing rows rather than reading a clock.
+ *
+ * The unit is picked from the rounded count rather than from the raw gap, so a
+ * row never reads "in 60 minutes": 3599 seconds is nearer an hour than it is
+ * fifty-nine minutes, and the row below it already says "in 1 hour".
  */
 export function since(seconds: number): string {
   if (!seconds) return ''
   const gap = seconds - now()
   const ahead = gap > 0
   const size = Math.abs(gap)
-  const [count, unit] =
-    size < 60
-      ? [size, 'second']
-      : size < 3600
-        ? [Math.round(size / 60), 'minute']
-        : size < DAY
-          ? [Math.round(size / 3600), 'hour']
-          : size < DAY * 30
-            ? [Math.round(size / DAY), 'day']
-            : [Math.round(size / (DAY * 30)), 'month']
+  const [count, unit] = unitOf(size)
   const word = `${count} ${unit}${count === 1 ? '' : 's'}`
   return ahead ? `in ${word}` : `${word} ago`
+}
+
+/** The coarsest unit that still says something about a span, rounded to it. */
+function unitOf(size: number): [number, string] {
+  if (size < 60) return [size, 'second']
+  const minutes = Math.round(size / 60)
+  if (minutes < 60) return [minutes, 'minute']
+  const hours = Math.round(size / 3600)
+  if (hours < 24) return [hours, 'hour']
+  const days = Math.round(size / DAY)
+  if (days < 30) return [days, 'day']
+  return [Math.round(size / (DAY * 30)), 'month']
 }
 
 /** The local calendar day a moment falls on, as "2026-03-12" — the key a
